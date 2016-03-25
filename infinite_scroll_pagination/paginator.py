@@ -18,7 +18,7 @@ class SeekPaginator(object):
 
     def prepare_order(self):
         order_prefix = '-' if self.order == 'desc' else ''
-        lookup_field = "%s%s" % (self.lookup_field, order_prefix)
+        lookup_field = "%s%s" % (order_prefix, self.lookup_field)
         lookup_pk = '%spk' % order_prefix
 
         if self.lookup_field not in ("pk", "id"):
