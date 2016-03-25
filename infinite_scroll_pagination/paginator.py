@@ -10,18 +10,21 @@ __all__ = ["SeekPaginator", "SeekPage", "EmptyPage"]
 
 class SeekPaginator(object):
 
-    def __init__(self, query_set, per_page, lookup_field):
+    def __init__(self, query_set, per_page, lookup_field, order='desc'):
         self.query_set = query_set
         self.per_page = per_page
         self.lookup_field = lookup_field
+        self.order = order
 
     def prepare_order(self):
-        lookup_field_desc = "-%s" % self.lookup_field
+        order_prefix = '-' if self.order == 'desc' else ''
+        lookup_field = "%s%s" % (self.lookup_field, order_prefix)
+        lookup_pk = '%spk' % order_prefix
 
         if self.lookup_field not in ("pk", "id"):
-            return [lookup_field_desc, "-pk"]
+            return [lookup_field, lookup_pk]
         else:
-            return [lookup_field_desc, ]
+            return [lookup_field, ]
 
     def prepare_lookup(self, value, pk):
         """
@@ -32,11 +35,12 @@ class SeekPaginator(object):
         AND NOT (date = ? AND id >= ?)
         ORDER BY date DESC, id DESC
         """
+        lookup_suffix = 'lt' if self.order == 'desc' else 'gt'
         if self.lookup_field not in ("pk", "id"):
-            lookup = "%s__lte" % self.lookup_field
+            lookup = "%s__%se" % (self.lookup_field, lookup_suffix)
             lookup_exclude = {self.lookup_field: value, "pk__gte": pk, }
         else:
-            lookup = "%s__lt" % self.lookup_field
+            lookup = "%s__%s" % (self.lookup_field, lookup_suffix)
             lookup_exclude = None
 
         lookup_filter = {lookup: value, }
