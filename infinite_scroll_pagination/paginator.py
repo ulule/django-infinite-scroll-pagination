@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
 
@@ -23,8 +23,8 @@ class SeekPaginator(object):
 
         if self.lookup_field not in ("pk", "id"):
             return [lookup_field, lookup_pk]
-        else:
-            return [lookup_field, ]
+
+        return [lookup_field, ]
 
     def prepare_lookup(self, value, pk):
         """
