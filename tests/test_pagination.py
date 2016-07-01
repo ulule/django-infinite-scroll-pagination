@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import unicode_literals
 import datetime
 import json
 
@@ -22,32 +19,34 @@ class PaginatorTest(TestCase):
             seconds = datetime.timedelta(seconds=i)
             Article.objects.create(title="%s" % i, date=date, date_unique=date + seconds)
 
-        self.paginator = SeekPaginator(Article.objects.all(), per_page=10, lookup_field="date_unique")
+        self.paginator = SeekPaginator(Article.objects.all(), per_page=10, lookup_field='date_unique')
 
     def test_prepare_order(self):
-        self.assertListEqual(self.paginator.prepare_order(), ["-date_unique", "-pk"])
-        self.paginator.lookup_field = "pk"
-        self.assertListEqual(self.paginator.prepare_order(), ["-pk", ])
-        self.paginator.lookup_field = "id"
-        self.assertListEqual(self.paginator.prepare_order(), ["-id", ])
+        self.assertListEqual(sorted(self.paginator.prepare_order()), sorted(['-date_unique', '-pk']))
+
+        self.paginator.lookup_field = 'pk'
+        self.assertListEqual(self.paginator.prepare_order(), ['-pk'])
+
+        self.paginator.lookup_field = 'id'
+        self.assertListEqual(self.paginator.prepare_order(), ['-id'])
 
     def test_prepare_lookup(self):
         lookup_f, lookup_e = self.paginator.prepare_lookup(value=1, pk=2)
-        self.assertDictEqual(lookup_f, {"date_unique__lte": 1, })
-        self.assertDictEqual(lookup_e, {"date_unique": 1, "pk__gte": 2})
+        self.assertDictEqual(lookup_f, {'date_unique__lte': 1, })
+        self.assertDictEqual(lookup_e, {'date_unique': 1, 'pk__gte': 2})
 
-        self.paginator.lookup_field = "pk"
+        self.paginator.lookup_field = 'pk'
         lookup_f, lookup_e = self.paginator.prepare_lookup(value=2, pk=2)
-        self.assertDictEqual(lookup_f, {"pk__lt": 2, })
-        self.assertIsNone(lookup_e)
+        self.assertDictEqual(lookup_f, {'pk__lt': 2, })
+        self.assertDictEqual(lookup_e, {})
 
-        self.paginator.lookup_field = "id"
+        self.paginator.lookup_field = 'id'
         lookup_f, lookup_e = self.paginator.prepare_lookup(value=2, pk=2)
-        self.assertDictEqual(lookup_f, {"id__lt": 2, })
-        self.assertIsNone(lookup_e)
+        self.assertDictEqual(lookup_f, {'id__lt': 2, })
+        self.assertDictEqual(lookup_e, {})
 
     def test_paginator(self):
-        articles = Article.objects.all().order_by("-date_unique")
+        articles = Article.objects.all().order_by('-date_unique')
 
         page_1 = self.paginator.page()
         self.assertListEqual(list(page_1), list(articles[:10]))
@@ -63,15 +62,15 @@ class PaginatorTest(TestCase):
         self.assertTrue(page.has_next())
 
     def test_last_page(self):
-        articles = Article.objects.all().order_by("-date_unique")
+        articles = Article.objects.all().order_by('-date_unique')
         next_to_last = list(articles)[-2]
 
         page = self.paginator.page(value=next_to_last.date_unique, pk=next_to_last.pk)
         self.assertFalse(page.has_next())
 
     def test_lookup_not_unique(self):
-        self.paginator.lookup_field = "date"
-        articles = Article.objects.all().order_by("-date", "-pk")
+        self.paginator.lookup_field = 'date'
+        articles = Article.objects.all().order_by('-date', '-pk')
 
         page_1 = self.paginator.page()
         self.assertListEqual(list(page_1), list(articles[:10]))
@@ -80,8 +79,8 @@ class PaginatorTest(TestCase):
         self.assertListEqual(list(page_2), list(articles[10:20]))
 
     def test_lookup_pk(self):
-        self.paginator.lookup_field = "pk"
-        articles = Article.objects.all().order_by("-pk")
+        self.paginator.lookup_field = 'pk'
+        articles = Article.objects.all().order_by('-pk')
 
         page_1 = self.paginator.page()
         self.assertListEqual(list(page_1), list(articles[:10]))
@@ -90,8 +89,8 @@ class PaginatorTest(TestCase):
         self.assertListEqual(list(page_2), list(articles[10:20]))
 
     def test_lookup_id(self):
-        self.paginator.lookup_field = "id"
-        articles = Article.objects.all().order_by("-id")
+        self.paginator.lookup_field = 'id'
+        articles = Article.objects.all().order_by('-id')
 
         page_1 = self.paginator.page()
         self.assertListEqual(list(page_1), list(articles[:10]))
@@ -114,7 +113,7 @@ class PaginatorTest(TestCase):
         for i, d in enumerate(dates):
             Article.objects.create(title="%s" % i, date=date, date_unique=d)
 
-        articles = Article.objects.all().order_by("-date_unique")
+        articles = Article.objects.all().order_by('-date_unique')
 
         page_1 = self.paginator.page()
         self.assertListEqual(list(page_1), list(articles[:10]))
@@ -135,7 +134,7 @@ class PageTest(TestCase):
             seconds = datetime.timedelta(seconds=i)
             Article.objects.create(title="%s" % i, date=date, date_unique=date + seconds)
 
-        self.paginator = SeekPaginator(Article.objects.all(), per_page=10, lookup_field="date_unique")
+        self.paginator = SeekPaginator(Article.objects.all(), per_page=10, lookup_field='date_unique')
 
     def test_unimplemented(self):
         page = self.paginator.page()
@@ -146,7 +145,7 @@ class PageTest(TestCase):
         self.assertRaises(NotImplementedError, page.end_index)
 
     def test_objects_left(self):
-        articles = Article.objects.all().order_by("-date_unique")
+        articles = Article.objects.all().order_by('-date_unique')
         page = self.paginator.page()
         self.assertEqual(page.objects_left, len(articles[self.paginator.per_page:]))
 
@@ -168,7 +167,6 @@ class PaginatorViewTest(TestCase):
 
     def setUp(self):
         date = timezone.now()
-
         for i in range(25):
             seconds = datetime.timedelta(seconds=i)
             Article.objects.create(title="%s" % i, date=date, date_unique=date + seconds)
@@ -181,10 +179,11 @@ class PaginatorViewTest(TestCase):
         self.assertEqual(res['articles'], [{u'title': a.title, } for a in articles[:20]])
 
     def test_page(self):
-        articles = Article.objects.all().order_by("-date", "-pk")
+        articles = Article.objects.all().order_by('-date', '-pk')
         art = articles[20]
 
         response = self.client.get(reverse('pagination-ajax', kwargs={'pk': str(art.pk), }),
                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
         res = json.loads(response.content.decode('utf-8'))
         self.assertEqual(res['articles'], [{u'title': a.title, } for a in articles[21:40]])
