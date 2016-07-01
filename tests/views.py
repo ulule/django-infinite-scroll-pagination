@@ -1,6 +1,3 @@
-#-*- coding: utf-8 -*-
-
-from __future__ import unicode_literals
 import json
 
 from django.http import Http404, HttpResponse
@@ -29,6 +26,7 @@ def pagination_ajax(request, pk=None):
         return Http404()
 
     articles_list = [{"title": a.title, } for a in page]
+
     data = {'articles': articles_list,
             'has_next': page.has_next(),
             'pk': page[-1].pk}

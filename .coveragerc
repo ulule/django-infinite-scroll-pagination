@@ -1,0 +1,3 @@
+[run]
+omit =
+    infinite_scroll_pagination/tests/*
