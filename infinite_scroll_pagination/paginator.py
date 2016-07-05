@@ -10,8 +10,8 @@ __all__ = [
 
 class SeekPaginator(object):
 
-    def __init__(self, query_set, per_page, lookup_field, order='desc', order_by_pk=True):
-        self.query_set = query_set
+    def __init__(self, queryset, per_page, lookup_field, order='desc', order_by_pk=True):
+        self.queryset = queryset
         self.per_page = per_page
         self.lookup_field = lookup_field
         self.order = order
@@ -59,19 +59,19 @@ class SeekPaginator(object):
         return filter_lookups, exclude_lookups
 
     def page(self, value=None, pk=None):
-        query_set = self.query_set
+        queryset = self.queryset
 
         if value is not None:
             filter_lookups, exclude_lookups = self.prepare_lookup(value=value, pk=pk)
 
-            query_set = query_set.filter(**filter_lookups)
+            queryset = queryset.filter(**filter_lookups)
             if exclude_lookups:
-                query_set = query_set.exclude(**exclude_lookups)
+                queryset = queryset.exclude(**exclude_lookups)
 
         order = self.prepare_order()
-        query_set = query_set.order_by(*order)[:self.per_page + 1]
+        queryset = queryset.order_by(*order)[:self.per_page + 1]
 
-        object_list = list(query_set)
+        object_list = list(queryset)
         has_next = len(object_list) > self.per_page
         object_list = object_list[:self.per_page]
 
@@ -138,13 +138,13 @@ class SeekPage(Page):
 
             filter_lookups, exclude_lookups = self.paginator.prepare_lookup(**prepare_lookup_kwargs)
 
-            query_set = self.paginator.query_set.filter(**filter_lookups)
+            queryset = self.paginator.queryset.filter(**filter_lookups)
             if exclude_lookups:
-                query_set = query_set.exclude(**exclude_lookups)
+                queryset = queryset.exclude(**exclude_lookups)
 
             order = self.paginator.prepare_order()
 
-            self._objects_left = query_set.order_by(*order).count()
+            self._objects_left = queryset.order_by(*order).count()
 
         return self._objects_left
 
