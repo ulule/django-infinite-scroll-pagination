@@ -10,12 +10,12 @@ __all__ = [
 
 class SeekPaginator(object):
 
-    def __init__(self, query_set, per_page, lookup_field, order='desc', use_pk=True):
+    def __init__(self, query_set, per_page, lookup_field, order='desc', order_by_pk=True):
         self.query_set = query_set
         self.per_page = per_page
         self.lookup_field = lookup_field
         self.order = order
-        self.use_pk = use_pk
+        self.order_by_pk = order_by_pk
 
     def prepare_order(self):
         params = []
@@ -25,7 +25,7 @@ class SeekPaginator(object):
 
         params.append(lookup_field)
 
-        if self.use_pk:
+        if self.order_by_pk:
             if self.lookup_field not in ('pk', 'id'):
                 params.append('%spk' % order_prefix)
 
@@ -49,7 +49,7 @@ class SeekPaginator(object):
             filter_lookup = '%s__%se' % (self.lookup_field, suffix)
 
             exclude_lookups = {self.lookup_field: value}
-            if pk is not None and self.use_pk:
+            if pk is not None and self.order_by_pk:
                 exclude_lookups['pk__gte'] = pk
         else:
             filter_lookup = '%s__%s' % (self.lookup_field, suffix)
@@ -82,18 +82,18 @@ class SeekPaginator(object):
                         number=value,
                         paginator=self,
                         has_next=has_next,
-                        use_pk=self.use_pk)
+                        order_by_pk=self.order_by_pk)
 
 
 class SeekPage(Page):
 
-    def __init__(self, object_list, number, paginator, has_next, use_pk):
+    def __init__(self, object_list, number, paginator, has_next, order_by_pk):
         super(SeekPage, self).__init__(object_list, number, paginator)
 
         self._has_next = has_next
         self._objects_left = None
         self._pages_left = None
-        self._use_pk = use_pk
+        self._order_by_pk = order_by_pk
 
     def __repr__(self):
         return '<Page value %s>' % self.number or ""
@@ -133,7 +133,7 @@ class SeekPage(Page):
             value = getattr(last, self.paginator.lookup_field)
 
             prepare_lookup_kwargs = {'value': value}
-            if self._use_pk:
+            if self._order_by_pk:
                 prepare_lookup_kwargs['pk'] = last.pk
 
             filter_lookups, exclude_lookups = self.paginator.prepare_lookup(**prepare_lookup_kwargs)
